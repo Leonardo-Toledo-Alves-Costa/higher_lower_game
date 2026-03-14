@@ -307,3 +307,24 @@ const data = [
         'country': 'United States'
     }
 ]
+
+app.get("/personagens", (req, res) => {
+    res.json(data);
+});
+
+app.listen(3000, () => {
+  console.log("Servidor rodando na porta 3000!");
+});
+
+app.get("/sorteio", (req, res) =>{
+    let shuffledList = [];
+    while(shuffledList.length < 2){
+        let randomNum = Math.floor(Math.random() * data.length);
+        let shuffled = data[randomNum];
+        
+        if(!shuffledList.includes(shuffled)){
+            shuffledList.push(shuffled);
+        }
+    }
+    res.json(shuffledList);
+});
