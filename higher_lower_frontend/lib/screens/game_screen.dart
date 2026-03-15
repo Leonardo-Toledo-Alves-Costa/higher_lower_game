@@ -35,6 +35,19 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
+  void _checkAnswer(bool choseHigher){
+    int followersA = characters[0].followerCount;
+    int followersB = characters[1].followerCount;
+  
+    bool isHigher = followersB > followersA;
+
+    if(choseHigher == isHigher){
+      print("RIGHT!");
+    }else{
+      print("WRONG!");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -131,6 +144,48 @@ class _GameScreenState extends State<GameScreen> {
                         const Text(
                           'has MORE or LESS followers?',
                           style: TextStyle(fontSize: 20, color: Colors.white),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 30,
+                                  vertical: 15,
+                                ),
+                              ),
+                              onPressed: () => _checkAnswer(true),
+                              child: const Text(
+                                "MORE",
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color.fromARGB(255, 175, 47, 7),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 30,
+                                  vertical: 15,
+                                ),
+                              ),
+                              onPressed: () => _checkAnswer(false),
+                              child: const Text(
+                                "LESS",
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
