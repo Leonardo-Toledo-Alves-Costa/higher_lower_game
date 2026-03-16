@@ -11,8 +11,10 @@ class GameScreen extends StatefulWidget {
 
 class _GameScreenState extends State<GameScreen> {
   List<Character> characters = [];
+  int score = 0;
 
   bool isLoading = true;
+  bool isRevealed = false;
 
   final ApiService _apiService = ApiService();
 
@@ -29,22 +31,65 @@ class _GameScreenState extends State<GameScreen> {
       setState(() {
         characters = dataReady;
         isLoading = false;
+        isRevealed = false;
       });
     } catch (e) {
       print("Error to load data: $e");
     }
   }
 
-  void _checkAnswer(bool choseHigher){
+  void _showGameOverDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Game Over!"),
+          content: Text("You scored $score points. Want to try again?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+
+                setState(() {
+                  score = 0;
+                  isLoading = true;
+                });
+
+                _loadShuffle();
+              },
+              child: const Text("PLAY AGAIN"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _checkAnswer(bool choseHigher) async {
     int followersA = characters[0].followerCount;
     int followersB = characters[1].followerCount;
-  
+
     bool isHigher = followersB > followersA;
 
-    if(choseHigher == isHigher){
+    if (choseHigher == isHigher) {
       print("RIGHT!");
-    }else{
+
+      setState(() {
+        score += 1;
+        isRevealed = true;
+      });
+
+      await Future.delayed(const Duration(seconds: 2));
+
+      setState(() {
+        isLoading = true;
+      });
+
+      _loadShuffle();
+    } else {
       print("WRONG!");
+      _showGameOverDialog();
     }
   }
 
@@ -52,8 +97,13 @@ class _GameScreenState extends State<GameScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Higher or Lower: The Game"),
-        backgroundColor: Colors.purple,
+        title: 
+        Text(
+          score != 0 ? "Score: $score" : "Higher or Lower: The Game\n Who has more followers?",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.white,
+        centerTitle: true,
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -75,7 +125,6 @@ class _GameScreenState extends State<GameScreen> {
                           ),
                         ),
 
-                        // 2. A descrição do Personagem A
                         Text(
                           characters[0].description,
                           style: const TextStyle(
@@ -122,7 +171,6 @@ class _GameScreenState extends State<GameScreen> {
                           ),
                         ),
 
-                        // 2. A descrição do Personagem A
                         Text(
                           characters[1].description,
                           style: const TextStyle(
@@ -147,46 +195,60 @@ class _GameScreenState extends State<GameScreen> {
                         ),
 
                         const SizedBox(height: 20),
-
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 30,
-                                  vertical: 15,
-                                ),
-                              ),
-                              onPressed: () => _checkAnswer(true),
-                              child: const Text(
-                                "MORE",
-                                style: TextStyle(
-                                  fontSize: 20,
+                        isRevealed
+                            ? Text(
+                                "${characters[1].followerCount} millions",
+                                style: const TextStyle(
+                                  fontSize: 40,
+                                  fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                 ),
+                              )
+                            : Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.green,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 30,
+                                        vertical: 15,
+                                      ),
+                                    ),
+                                    onPressed: () => _checkAnswer(true),
+                                    child: const Text(
+                                      "MORE",
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color.fromARGB(
+                                        255,
+                                        175,
+                                        47,
+                                        7,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 30,
+                                        vertical: 15,
+                                      ),
+                                    ),
+                                    onPressed: () => _checkAnswer(false),
+                                    child: const Text(
+                                      "LESS",
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color.fromARGB(255, 175, 47, 7),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 30,
-                                  vertical: 15,
-                                ),
-                              ),
-                              onPressed: () => _checkAnswer(false),
-                              child: const Text(
-                                "LESS",
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
                       ],
                     ),
                   ),
